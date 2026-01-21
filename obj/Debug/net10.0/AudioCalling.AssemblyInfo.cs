@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AudioCalling")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a990a9d01b6c6fc534426668a86fca0510bec24c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d20836a9d82fb19361e317551486a09060a7db5a")]
 [assembly: System.Reflection.AssemblyProductAttribute("AudioCalling")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AudioCalling")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
