@@ -4,6 +4,8 @@ pipeline {
     environment {
         BUILD_CONFIGURATION = 'Release'
         PUBLISH_PATH = 'C:\\Users\\sahag\\OneDrive\\Desktop\\c#\\published'
+        IIS_SITE = 'AudioCallingSite'
+        IIS_PATH = 'C:\\inetpub\\AudioCallingApp'
         DOTNET_CLI_TELEMETRY_OPTOUT = '1'
         DOTNET_NOLOGO = '1'
     }
@@ -44,14 +46,38 @@ pipeline {
                 """
             }
         }
+
+        stage('Stop IIS Site') {
+            steps {
+                bat """
+                %windir%\\system32\\inetsrv\\appcmd stop site "%IIS_SITE%"
+                """
+            }
+        }
+
+        stage('Deploy to IIS') {
+            steps {
+                bat """
+                xcopy /Y /E "%PUBLISH_PATH%\\*" "%IIS_PATH%\\"
+                """
+            }
+        }
+
+        stage('Start IIS Site') {
+            steps {
+                bat """
+                %windir%\\system32\\inetsrv\\appcmd start site "%IIS_SITE%"
+                """
+            }
+        }
     }
 
     post {
         success {
-            echo '✅ Build & Publish successful'
+            echo '✅ Build, Publish & IIS Deployment successful'
         }
         failure {
-            echo '❌ Build failed'
+            echo '❌ Pipeline failed'
         }
     }
 }
