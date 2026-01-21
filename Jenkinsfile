@@ -51,7 +51,7 @@ pipeline {
                 // bat 'dotnet publish --configuration %BUILD_CONFIGURATION% --no-build --output publish'
             }
         }
-        stage('Publish') {
+        stage('Deploy') {
         steps {
             bat """
             dotnet publish ^
