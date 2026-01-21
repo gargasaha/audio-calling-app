@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         BUILD_CONFIGURATION = 'Release'
-        PUBLISH_PATH = 'C:\\Users\\sahag\\OneDrive\\Desktop\\c#\\published'
+        TEMP_PUBLISH_PATH = 'C:\\deploy\\publish'
         IIS_SITE = 'AudioCallingSite'
         IIS_PATH = 'C:\\inetpub\\AudioCallingApp'
         DOTNET_CLI_TELEMETRY_OPTOUT = '1'
@@ -18,66 +18,65 @@ pipeline {
             }
         }
 
-        stage('Restore Dependencies') {
+        stage('Restore') {
             steps {
-                bat 'dotnet restore'
+                bat 'dotnet restore AudioCalling.csproj'
             }
         }
 
         stage('Build') {
             steps {
-                bat 'dotnet build --configuration %BUILD_CONFIGURATION% --no-restore'
+                bat 'dotnet build AudioCalling.csproj -c %BUILD_CONFIGURATION% --no-restore'
             }
         }
 
-        stage('Run Tests') {
+        stage('Test') {
             steps {
-                bat 'dotnet test --configuration %BUILD_CONFIGURATION% --no-build'
+                bat 'dotnet test AudioCalling.csproj -c %BUILD_CONFIGURATION% --no-build'
             }
         }
 
-        stage('Publish') {
+        stage('Publish to Temp Folder') {
             steps {
                 bat """
-                dotnet publish ^
-                --configuration %BUILD_CONFIGURATION% ^
+                if exist "%TEMP_PUBLISH_PATH%" rmdir /s /q "%TEMP_PUBLISH_PATH%"
+                mkdir "%TEMP_PUBLISH_PATH%"
+
+                dotnet publish AudioCalling.csproj ^
+                -c %BUILD_CONFIGURATION% ^
                 --no-build ^
-                --output "%PUBLISH_PATH%"
+                -o "%TEMP_PUBLISH_PATH%"
                 """
             }
         }
 
         stage('Stop IIS Site') {
             steps {
-                bat """
-                %windir%\\system32\\inetsrv\\appcmd stop site "%IIS_SITE%"
-                """
+                bat '%windir%\\system32\\inetsrv\\appcmd stop site "%IIS_SITE%"'
             }
         }
 
         stage('Deploy to IIS') {
             steps {
                 bat """
-                xcopy /Y /E "%PUBLISH_PATH%\\*" "%IIS_PATH%\\"
+                xcopy /E /Y "%TEMP_PUBLISH_PATH%\\*" "%IIS_PATH%\\"
                 """
             }
         }
 
         stage('Start IIS Site') {
             steps {
-                bat """
-                %windir%\\system32\\inetsrv\\appcmd start site "%IIS_SITE%"
-                """
+                bat '%windir%\\system32\\inetsrv\\appcmd start site "%IIS_SITE%"'
             }
         }
     }
 
     post {
         success {
-            echo '✅ Build, Publish & IIS Deployment successful'
+            echo '✅ CI/CD completed successfully'
         }
         failure {
-            echo '❌ Pipeline failed'
+            echo '❌ CI/CD failed'
         }
     }
 }
