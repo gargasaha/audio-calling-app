@@ -2,9 +2,10 @@ pipeline {
     agent any
 
     environment {
+        BUILD_CONFIGURATION = 'Release'
+        PUBLISH_PATH = 'C:\\Users\\sahag\\OneDrive\\Desktop\\c#\\published'
         DOTNET_CLI_TELEMETRY_OPTOUT = '1'
         DOTNET_NOLOGO = '1'
-        BUILD_CONFIGURATION = 'Release'
     }
 
     stages {
@@ -17,62 +18,40 @@ pipeline {
 
         stage('Restore Dependencies') {
             steps {
-                sh 'dotnet restore'
-                // For Windows agent, use:
-                // bat 'dotnet restore'
+                bat 'dotnet restore'
             }
         }
 
         stage('Build') {
             steps {
-                sh "dotnet build --configuration ${BUILD_CONFIGURATION} --no-restore"
-                // Windows:
-                // bat "dotnet build --configuration %BUILD_CONFIGURATION% --no-restore"
+                bat 'dotnet build --configuration %BUILD_CONFIGURATION% --no-restore'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh "dotnet test --configuration ${BUILD_CONFIGURATION} --no-build"
-                // Windows:
-                // bat "dotnet test --configuration %BUILD_CONFIGURATION% --no-build"
+                bat 'dotnet test --configuration %BUILD_CONFIGURATION% --no-build'
             }
         }
 
         stage('Publish') {
             steps {
-                sh """
-                dotnet publish \
-                --configuration ${BUILD_CONFIGURATION} \
-                --no-build \
-                --output publish
+                bat """
+                dotnet publish ^
+                --configuration %BUILD_CONFIGURATION% ^
+                --no-build ^
+                --output "%PUBLISH_PATH%"
                 """
-                // Windows:
-                // bat 'dotnet publish --configuration %BUILD_CONFIGURATION% --no-build --output publish'
             }
         }
-        stage('Deploy') {
-        steps {
-            bat """
-            dotnet publish ^
-            --configuration Release ^
-            --no-build ^
-            --output "C:\\Users\\sahag\\OneDrive\\Desktop\\c#\\published"
-            """
-    }
-}
-
     }
 
     post {
         success {
-            echo '✅ Build and publish successful'
+            echo '✅ Build & Publish successful'
         }
         failure {
             echo '❌ Build failed'
-        }
-        always {
-            archiveArtifacts artifacts: 'publish/**', fingerprint: true
         }
     }
 }
